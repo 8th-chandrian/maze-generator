@@ -26,9 +26,7 @@ public class MazeDisplay {
     public static final double PREFERRED_DISPLAY_WIDTH = 800;
     
     static final String WIDTH_TEXT_CLASS = "width_text";
-    static final String WIDTH_TEXT_INVALID_CLASS = "width_text_invalid";
     static final String HEIGHT_TEXT_CLASS = "height_text";
-    static final String HEIGHT_TEXT_INVALID_CLASS = "height_text_invalid";
     
     //The requisite panes for the overall app
     BorderPane appPane;
@@ -48,6 +46,10 @@ public class MazeDisplay {
     Button zoomOutButton;
     TextField widthText;
     TextField heightText;
+    
+    //Flags keeping track of text validity
+    boolean widthTextIsValid;
+    boolean heightTextIsValid;
     
     //The controller class
     GUIMazeGenerator app;
@@ -97,6 +99,8 @@ public class MazeDisplay {
         
         widthPane.getChildren().addAll(widthLabel, widthText);
         heightPane.getChildren().addAll(heightLabel, heightText);
+        widthTextIsValid = false;
+        heightTextIsValid = false;
         
         toolbar.getChildren().addAll(generateButton, widthPane, heightPane, zoomInButton, zoomOutButton, solutionCheckBox);
         appPane.setTop(toolbar);
@@ -157,10 +161,12 @@ public class MazeDisplay {
      */
     public void invalidText(TextField text){
         if(text.equals(widthText)){
-            widthText.setStyle(WIDTH_TEXT_INVALID_CLASS);
+            widthText.setStyle("-fx-text-fill: red");
+            widthTextIsValid = false;
         }
         else if(text.equals(heightText)){
-            heightText.setStyle(HEIGHT_TEXT_INVALID_CLASS);
+            heightText.setStyle("-fx-text-fill: red");
+            heightTextIsValid = false;
         }
         generateButton.setDisable(true);
     }
@@ -171,14 +177,16 @@ public class MazeDisplay {
      */
     public void validText(TextField text){
         if(text.equals(widthText)){
-            widthText.setStyle(WIDTH_TEXT_CLASS);
+            widthText.setStyle("-fx-text-fill: black");
+            widthTextIsValid = true;
         }
         else if(text.equals(heightText)){
-            heightText.setStyle(HEIGHT_TEXT_CLASS);
+            heightText.setStyle("-fx-text-fill: black");
+            heightTextIsValid = true;
         }
         
         //If both text fields are valid, enable generate button
-        if(widthText.getStyle().equals(WIDTH_TEXT_CLASS) && heightText.getStyle().equals(HEIGHT_TEXT_CLASS))
+        if(widthTextIsValid && heightTextIsValid)
             generateButton.setDisable(false);
     }
     
