@@ -3,11 +3,14 @@
  */
 package guimazegenerator;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.HBox;
@@ -20,7 +23,12 @@ import javafx.stage.Stage;
 public class MazeDisplay {
     
     public static final double PREFERRED_DISPLAY_HEIGHT = 600;
-    public static final double PREFERRED_DISPLAY_WIDTH = 600;
+    public static final double PREFERRED_DISPLAY_WIDTH = 800;
+    
+    static final String WIDTH_TEXT_CLASS = "width_text";
+    static final String WIDTH_TEXT_INVALID_CLASS = "width_text_invalid";
+    static final String HEIGHT_TEXT_CLASS = "height_text";
+    static final String HEIGHT_TEXT_INVALID_CLASS = "height_text_invalid";
     
     //The requisite panes for the overall app
     BorderPane appPane;
@@ -38,13 +46,15 @@ public class MazeDisplay {
     Button generateButton;
     Button zoomInButton;
     Button zoomOutButton;
-    TextField mazeWidth;
-    TextField mazeHeight;
+    TextField widthText;
+    TextField heightText;
     
     //The controller class
-    MazeController control;
+    GUIMazeGenerator app;
 
-    MazeDisplay(Stage primaryStage) {
+    MazeDisplay(Stage primaryStage, GUIMazeGenerator app) {
+        this.app = app;
+        
         initDisplay();
         initHandlers();
         
@@ -56,9 +66,6 @@ public class MazeDisplay {
      * Initializes the maze display.
      */
     public void initDisplay(){
-        
-        //Initialize the controller class
-        control = new MazeController(this);
         
         //Initialize the display panes
         appPane = new BorderPane();
@@ -75,15 +82,21 @@ public class MazeDisplay {
         
         //Initialize the controls and set their handlers
         solutionCheckBox = new CheckBox();
-        solutionCheckBox.setSelected(false);
+        solutionCheckBox.setSelected(false);  
         generateButton = new Button("Generate Maze");
         zoomInButton = new Button("Zoom In");
         zoomOutButton = new Button("Zoom Out");
-        mazeWidth = new TextField();
-        mazeHeight = new TextField();
+        widthText = new TextField();
+        heightText = new TextField();
         
-        widthPane.getChildren().addAll(widthLabel, mazeWidth);
-        heightPane.getChildren().addAll(heightLabel, mazeHeight);
+        //Disable zooming and solution controls, since no maze exists
+        generateButton.setDisable(true);
+        solutionCheckBox.setDisable(true);
+        zoomInButton.setDisable(true);
+        zoomOutButton.setDisable(true);
+        
+        widthPane.getChildren().addAll(widthLabel, widthText);
+        heightPane.getChildren().addAll(heightLabel, heightText);
         
         toolbar.getChildren().addAll(generateButton, widthPane, heightPane, zoomInButton, zoomOutButton, solutionCheckBox);
         appPane.setTop(toolbar);
@@ -95,20 +108,85 @@ public class MazeDisplay {
      */
     public void initHandlers(){
         solutionCheckBox.setOnAction(e -> {
-            control.handleSolutionChecked(solutionCheckBox.isSelected());
+            app.getController().handleSolutionChecked(solutionCheckBox.isSelected());
         });
         
         generateButton.setOnAction(e -> {
-           control.handleGenerateButtonPress(); 
+           app.getController().handleGenerateButtonPress(); 
         });
         
         zoomInButton.setOnAction(e -> {
-            control.handleZoomInPress();
+            app.getController().handleZoomInPress();
         });
         
         zoomOutButton.setOnAction(e -> {
-           control.handleZoomOutPress(); 
+           app.getController().handleZoomOutPress(); 
+        });
+        
+        widthText.setOnKeyPressed(e -> {
+            if(e.getCode().equals(KeyCode.ENTER)){
+                display.requestFocus();
+            }
+        });
+        
+        heightText.setOnKeyPressed(e -> {
+            if(e.getCode().equals(KeyCode.ENTER))
+                display.requestFocus();
+        });
+        
+        widthText.textProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable,
+            String oldValue, String newValue){
+                app.getController().handleTextEdited(widthText, newValue);
+            }
+        });
+        
+        heightText.textProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable,
+            String oldValue, String newValue){
+                app.getController().handleTextEdited(heightText, newValue);
+            }
         });
     }
     
+    /**
+     * Disables generate button and sets text color to red if text is invalid.
+     * @param text 
+     */
+    public void invalidText(TextField text){
+        if(text.equals(widthText)){
+            widthText.setStyle(WIDTH_TEXT_INVALID_CLASS);
+        }
+        else if(text.equals(heightText)){
+            heightText.setStyle(HEIGHT_TEXT_INVALID_CLASS);
+        }
+        generateButton.setDisable(true);
+    }
+    
+    /**
+     * Enables generate button and sets text color to black if text is valid.
+     * @param text 
+     */
+    public void validText(TextField text){
+        if(text.equals(widthText)){
+            widthText.setStyle(WIDTH_TEXT_CLASS);
+        }
+        else if(text.equals(heightText)){
+            heightText.setStyle(HEIGHT_TEXT_CLASS);
+        }
+        
+        //If both text fields are valid, enable generate button
+        if(widthText.getStyle().equals(WIDTH_TEXT_CLASS) && heightText.getStyle().equals(HEIGHT_TEXT_CLASS))
+            generateButton.setDisable(false);
+    }
+    
+    public int getMazeWidth(){
+        return Integer.parseInt(widthText.getText());
+    }
+    
+    public int getMazeHeight(){
+        return Integer.parseInt(heightText.getText());
+    }
 }

@@ -3,32 +3,58 @@
  */
 package guimazegenerator;
 
+import javafx.scene.control.TextField;
+
 /**
  *
  * @author Noah
  */
 public class MazeController {
 
-    MazeDisplay display;
+    GUIMazeGenerator app;
     
-    MazeController(MazeDisplay display) {
-        this.display = display;
+    MazeController(GUIMazeGenerator app) {
+        this.app = app;
     }
 
-    void handleSolutionChecked(boolean selected) {
+    public void handleSolutionChecked(boolean selected) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    void handleGenerateButtonPress() {
+    public void handleGenerateButtonPress() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    void handleZoomInPress() {
+    public void handleZoomInPress() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    void handleZoomOutPress() {
+    public void handleZoomOutPress() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    /**
+     * Disables generate button and sets text color to red if the following parameters are not met:
+     *      Text only consists of digits
+     *      Text is not empty
+     *      Texts parses to integer between 2 and 999
+     * .
+     * @param text
+     * @param textField
+     */
+    public void handleTextEdited(TextField textField, String text) {
+        if(text.isEmpty()){
+            app.getDisplay().invalidText(textField);
+        }
+        else if(!text.matches("[0-9]+")){
+            app.getDisplay().invalidText(textField);
+        }
+        else if(Integer.parseInt(text) > 999 || Integer.parseInt(text) < 2){
+            app.getDisplay().invalidText(textField);
+        }
+        else{
+            app.getDisplay().validText(textField);
+        }
     }
     
 }

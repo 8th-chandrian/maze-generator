@@ -13,18 +13,27 @@ import javafx.stage.Stage;
  */
 public class GUIMazeGenerator extends Application {
     
-    MazeDisplay display;
-    Maze currentMaze;
+    private MazeDisplay display;
+    private MazeController control;
+    private Maze currentMaze;
 
     @Override
     public void start(Stage primaryStage) {
-        
-        display = new MazeDisplay(primaryStage);
+        display = new MazeDisplay(primaryStage, this);
+        control = new MazeController(this);
         primaryStage.show();
     }
     
     public void setCurrentMaze(Maze m){
         currentMaze = m;
+    }
+    
+    public MazeDisplay getDisplay(){
+        return display;
+    }
+    
+    public MazeController getController(){
+        return control;
     }
 
     /**
