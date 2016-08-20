@@ -1,2 +1,2 @@
 # maze-generator
-A simple maze generation app built with JavaFX.
+A maze generation app in Java, with front end done in JavaFX.
