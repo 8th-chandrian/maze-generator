@@ -22,7 +22,8 @@ public class MazeController {
     }
 
     public void handleGenerateButtonPress() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        int width = app.getDisplay().getMazeWidth();
+        int height = app.getDisplay().getMazeHeight();
     }
 
     public void handleZoomInPress() {
