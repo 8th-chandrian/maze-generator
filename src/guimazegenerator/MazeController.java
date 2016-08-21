@@ -28,14 +28,6 @@ public class MazeController {
         app.setCurrentMaze(m);
         app.getDisplay().displayCurrentMaze(width, height);
     }
-
-    public void handleZoomInPress() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    public void handleZoomOutPress() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
     
     /**
      * Disables generate button and sets text color to red if the following parameters are not met:
@@ -60,5 +52,4 @@ public class MazeController {
             app.getDisplay().validText(textField);
         }
     }
-    
 }

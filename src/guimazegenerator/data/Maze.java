@@ -12,6 +12,7 @@ public class Maze {
     int mazeWidth;
     int mazeHeight;
     MazeCell[][] mazeGrid;
+    double cellSize;
     
     /**
      * Constructor for Maze object. Maze contains a dynamic two-dimensional array of MazeCell objects
@@ -21,6 +22,7 @@ public class Maze {
     public Maze(int width, int height){
         mazeWidth = width;
         mazeHeight = height;
+        cellSize = -1; // Default cellSize value, will be set later by displayCurrentMaze method in MazeDisplay class
         mazeGrid = new MazeCell[mazeWidth][mazeHeight];
         
         //Initialize the newly-created array of MazeCells
@@ -198,5 +200,17 @@ public class Maze {
     
     public int getHeight(){
         return mazeHeight;
+    }
+    
+    /**
+     * NOTE: THIS METHOD SHOULD ONLY BE CALLED ONCE BY displayCurrentMaze!!!
+     * @param c 
+     */
+    public void setCellSize(double c){
+        cellSize = c;
+    }
+    
+    public double getCellSize(){
+        return cellSize;
     }
 }

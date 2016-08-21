@@ -4,6 +4,7 @@
 package guimazegenerator;
 
 import guimazegenerator.data.MazeCell;
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Group;
@@ -11,6 +12,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
@@ -27,10 +29,18 @@ import javafx.stage.Stage;
  */
 public class MazeDisplay {
     
+    // Standard values used for displaying the maze
     public static final double PREFERRED_DISPLAY_HEIGHT = 800;
     public static final double PREFERRED_DISPLAY_WIDTH = 800;
     public static final double DISPLAY_BUFFER = 1.1;
+    
+    // Standard color for solution cells
     public static final Color SOLUTION_COLOR = Color.CHARTREUSE;
+    
+    //Standard values for line thickness slider
+    public static final double MIN_THICKNESS = 0.1;
+    public static final double MAX_THICKNESS = 5.0;
+    public static final double DEFAULT_THICKNESS = 1.0;
     
     static final String WIDTH_TEXT_CLASS = "width_text";
     static final String HEIGHT_TEXT_CLASS = "height_text";
@@ -46,14 +56,18 @@ public class MazeDisplay {
     Label widthLabel;
     Label heightLabel;
     Label solutionLabel;
+    Label lineThicknessLabel;
     
     //The controls for the app
     CheckBox solutionCheckBox;
     Button generateButton;
-    Button zoomInButton;
-    Button zoomOutButton;
     TextField widthText;
     TextField heightText;
+    Slider lineThicknessSlider;
+    
+    //The groups holding the lines and solution boxes of the maze
+    Group lineGroup;
+    Group solutionGroup;
     
     //Flags keeping track of text validity
     boolean widthTextIsValid;
@@ -89,6 +103,7 @@ public class MazeDisplay {
         display.setMinHeight(PREFERRED_DISPLAY_HEIGHT);
         display.setMinWidth(PREFERRED_DISPLAY_WIDTH);
         toolbar = new HBox();
+        toolbar.setMinWidth(PREFERRED_DISPLAY_WIDTH);
         
         //Initialize the subpanes and labels
         widthPane = new HBox();
@@ -96,21 +111,23 @@ public class MazeDisplay {
         widthLabel = new Label("Width:");
         heightLabel = new Label("Height:");
         solutionLabel = new Label("Display solution");
+        lineThicknessLabel = new Label("Thickness");
         
         //Initialize the controls and set their handlers
         solutionCheckBox = new CheckBox();
         solutionCheckBox.setSelected(false);  
         generateButton = new Button("Generate Maze");
-        zoomInButton = new Button("Zoom In");
-        zoomOutButton = new Button("Zoom Out");
         widthText = new TextField();
         heightText = new TextField();
+        lineThicknessSlider = new Slider(MIN_THICKNESS, MAX_THICKNESS, DEFAULT_THICKNESS);
+        
+        //Initialize groups
+        lineGroup = new Group();
+        solutionGroup = new Group();
         
         //Disable zooming and solution controls, since no maze exists
         generateButton.setDisable(true);
         solutionCheckBox.setDisable(true);
-        zoomInButton.setDisable(true);
-        zoomOutButton.setDisable(true);
         
         widthPane.getChildren().addAll(widthLabel, widthText);
         heightPane.getChildren().addAll(heightLabel, heightText);
@@ -119,8 +136,7 @@ public class MazeDisplay {
         mazeIsDisplayed = false;
         solutionIsDisplayed = false;
         
-        toolbar.getChildren().addAll(generateButton, widthPane, heightPane, zoomInButton, 
-                zoomOutButton, solutionLabel, solutionCheckBox);
+        toolbar.getChildren().addAll(generateButton, widthPane, heightPane, lineThicknessLabel, lineThicknessSlider, solutionLabel, solutionCheckBox);
         appPane.setTop(toolbar);
         appPane.setCenter(display);
     }
@@ -141,12 +157,8 @@ public class MazeDisplay {
            app.getController().handleGenerateButtonPress(); 
         });
         
-        zoomInButton.setOnAction(e -> {
-            app.getController().handleZoomInPress();
-        });
-        
-        zoomOutButton.setOnAction(e -> {
-           app.getController().handleZoomOutPress(); 
+        lineThicknessSlider.valueProperty().addListener(e -> {
+           setMazeLineThickness(lineThicknessSlider.getValue());
         });
         
         widthText.setOnKeyPressed(e -> {
@@ -227,8 +239,11 @@ public class MazeDisplay {
      * @param height 
      */
     public void displayCurrentMaze(int width, int height) {
-        if(mazeIsDisplayed)
+        if(mazeIsDisplayed){
             display.getChildren().clear();  // First clear all children from display pane, if another maze is currently displayed
+            lineGroup.getChildren().clear();
+            solutionGroup.getChildren().clear();
+        }
         mazeIsDisplayed = true;
         if(solutionCheckBox.isDisable())
             solutionCheckBox.setDisable(false);
@@ -245,6 +260,8 @@ public class MazeDisplay {
         else
             cellSize = cellHeight;
         
+        app.getCurrentMaze().setCellSize(cellSize); // Now that we are displaying the maze, cellSize can be set
+        
         double widthOffset = (PREFERRED_DISPLAY_WIDTH - (cellSize * width)) / 2;
         double heightOffset = (PREFERRED_DISPLAY_HEIGHT - (cellSize * height)) / 2;
         
@@ -252,13 +269,17 @@ public class MazeDisplay {
         for(int i = 0; i < width; i++){
             for(int j = 0; j < height; j++){
                 if(solutionIsDisplayed && app.getCurrentMaze().getCell(i, j).getSolution())
-                    display.getChildren().add(displaySolutionCell(app.getCurrentMaze().getCell(i, j), widthOffset + (i * cellSize), 
-                        heightOffset + (j * cellSize), cellSize));
-                else
-                    display.getChildren().add(displayCell(app.getCurrentMaze().getCell(i, j), widthOffset + (i * cellSize), 
+                    solutionGroup.getChildren().add(displaySolutionCell(widthOffset + (i * cellSize), 
+                            heightOffset + (j * cellSize), cellSize));
+                lineGroup.getChildren().add(displayCell(app.getCurrentMaze().getCell(i, j), widthOffset + (i * cellSize), 
                         heightOffset + (j * cellSize), cellSize));
             }
-        }    
+        }
+        
+        /* The solution group is added first, so no matter how thick the lines get they will never be overlapped
+        by the solution rectangles. */
+        display.getChildren().add(solutionGroup);
+        display.getChildren().add(lineGroup);
     }
     
     /**
@@ -271,42 +292,58 @@ public class MazeDisplay {
      */
     public Group displayCell(MazeCell c, double startX, double startY, double cellSize){
         Group cellGroup = new Group();
-        if(c.hasTopWall())
-            cellGroup.getChildren().add(new Line(startX, startY, startX + cellSize, startY));
-        if(c.hasBottomWall())
-            cellGroup.getChildren().add(new Line(startX, startY + cellSize, startX + cellSize, startY + cellSize));
-        if(c.hasLeftWall())
-            cellGroup.getChildren().add(new Line(startX, startY, startX, startY + cellSize));
-        if(c.hasRightWall())
-            cellGroup.getChildren().add(new Line(startX + cellSize, startY, startX + cellSize, startY + cellSize));
+        if(c.hasTopWall()){
+            Line temp = new Line(startX, startY, startX + cellSize, startY);
+            temp.setStrokeWidth(lineThicknessSlider.getValue());
+            cellGroup.getChildren().add(temp);
+        }
+        if(c.hasBottomWall()){
+            Line temp = new Line(startX, startY + cellSize, startX + cellSize, startY + cellSize);
+            temp.setStrokeWidth(lineThicknessSlider.getValue());
+            cellGroup.getChildren().add(temp);
+        }
+        if(c.hasLeftWall()){
+            Line temp = new Line(startX, startY, startX, startY + cellSize);
+            temp.setStrokeWidth(lineThicknessSlider.getValue());
+            cellGroup.getChildren().add(temp);
+        }
+        if(c.hasRightWall()){
+            Line temp = new Line(startX + cellSize, startY, startX + cellSize, startY + cellSize);
+            temp.setStrokeWidth(lineThicknessSlider.getValue());
+            cellGroup.getChildren().add(temp);
+        }
         return cellGroup;
     }
     
     /**
-     * Creates a group of lines which can then be added to the display pane for a given cell.
-     * Additionally, adds a colored square to the group so that the maze's solution is clear to the user.
+     * Creates a rectangle that, when added to the display pane, will help to show the solution to the maze.
      * @param c
      * @param startX
      * @param startY
      * @param cellSize
      * @return 
      */
-    public Group displaySolutionCell(MazeCell c, double startX, double startY, double cellSize){
-        Group cellGroup = new Group();
-        if(c.hasTopWall())
-            cellGroup.getChildren().add(new Line(startX, startY, startX + cellSize, startY));
-        if(c.hasBottomWall())
-            cellGroup.getChildren().add(new Line(startX, startY + cellSize, startX + cellSize, startY + cellSize));
-        if(c.hasLeftWall())
-            cellGroup.getChildren().add(new Line(startX, startY, startX, startY + cellSize));
-        if(c.hasRightWall())
-            cellGroup.getChildren().add(new Line(startX + cellSize, startY, startX + cellSize, startY + cellSize));
-        
+    public Rectangle displaySolutionCell(double startX, double startY, double cellSize){
         Rectangle r = new Rectangle(startX, startY, cellSize, cellSize);
         r.setStroke(Color.TRANSPARENT);
         r.setFill(SOLUTION_COLOR);
-        cellGroup.getChildren().add(r);
-        
-        return cellGroup;
+        return r;
+    }
+    
+    /**
+     * Iterates through every element in the display. If the element is a line, its
+     * thickness is set to the new thickness just selected.
+     * @param thickness 
+     */
+    public void setMazeLineThickness(double thickness){
+        for(Object o : lineGroup.getChildren()){
+            if(o instanceof Group){
+                for(Object o2 : ((Group) o).getChildren()){
+                    if(o2 instanceof Line){
+                        ((Line) o2).setStrokeWidth(thickness);
+                    }
+                }
+            }
+        }
     }
 }

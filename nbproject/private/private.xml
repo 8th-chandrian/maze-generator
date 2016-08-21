@@ -3,11 +3,12 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/Users/mac/NetBeansProjects/GUIMazeGenerator/src/guimazegenerator/GUIMazeGenerator.java</file>
+            <file>file:/Users/mac/NetBeansProjects/GUIMazeGenerator/src/guimazegenerator/css/maze_generator_style.css</file>
             <file>file:/Users/mac/NetBeansProjects/GUIMazeGenerator/src/guimazegenerator/data/Maze.java</file>
-            <file>file:/Users/mac/NetBeansProjects/GUIMazeGenerator/src/guimazegenerator/MazeController.java</file>
-            <file>file:/Users/mac/NetBeansProjects/GUIMazeGenerator/src/guimazegenerator/data/MazeCell.java</file>
             <file>file:/Users/mac/NetBeansProjects/GUIMazeGenerator/src/guimazegenerator/MazeDisplay.java</file>
+            <file>file:/Users/mac/NetBeansProjects/GUIMazeGenerator/src/guimazegenerator/GUIMazeGenerator.java</file>
+            <file>file:/Users/mac/NetBeansProjects/GUIMazeGenerator/src/guimazegenerator/data/MazeCell.java</file>
+            <file>file:/Users/mac/NetBeansProjects/GUIMazeGenerator/src/guimazegenerator/MazeController.java</file>
         </group>
     </open-files>
 </project-private>
