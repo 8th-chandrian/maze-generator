@@ -20,10 +20,6 @@ public class MazeController {
         this.app = app;
     }
 
-    public void handleSolutionChecked(boolean selected) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
     public void handleGenerateButtonPress() {
         int width = app.getDisplay().getMazeWidth();
         int height = app.getDisplay().getMazeHeight();

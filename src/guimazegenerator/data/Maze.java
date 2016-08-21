@@ -191,4 +191,12 @@ public class Maze {
     public MazeCell getCell(int x, int y){
         return mazeGrid[x][y];
     }
+    
+    public int getWidth(){
+        return mazeWidth;
+    }
+    
+    public int getHeight(){
+        return mazeHeight;
+    }
 }

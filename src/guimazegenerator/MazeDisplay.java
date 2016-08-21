@@ -16,7 +16,9 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.HBox;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
 /**
@@ -28,6 +30,7 @@ public class MazeDisplay {
     public static final double PREFERRED_DISPLAY_HEIGHT = 800;
     public static final double PREFERRED_DISPLAY_WIDTH = 800;
     public static final double DISPLAY_BUFFER = 1.1;
+    public static final Color SOLUTION_COLOR = Color.CHARTREUSE;
     
     static final String WIDTH_TEXT_CLASS = "width_text";
     static final String HEIGHT_TEXT_CLASS = "height_text";
@@ -56,8 +59,11 @@ public class MazeDisplay {
     boolean widthTextIsValid;
     boolean heightTextIsValid;
     
+    //Flag to keep track of whether or not maze is displayed
+    boolean mazeIsDisplayed;
+    
     //Flag to keep track of whether or not solution is displayed
-    boolean isSolutionDisplayed;
+    boolean solutionIsDisplayed;
     
     //The controller class
     GUIMazeGenerator app;
@@ -110,7 +116,8 @@ public class MazeDisplay {
         heightPane.getChildren().addAll(heightLabel, heightText);
         widthTextIsValid = false;
         heightTextIsValid = false;
-        isSolutionDisplayed = false;
+        mazeIsDisplayed = false;
+        solutionIsDisplayed = false;
         
         toolbar.getChildren().addAll(generateButton, widthPane, heightPane, zoomInButton, 
                 zoomOutButton, solutionLabel, solutionCheckBox);
@@ -123,7 +130,11 @@ public class MazeDisplay {
      */
     public void initHandlers(){
         solutionCheckBox.setOnAction(e -> {
-            app.getController().handleSolutionChecked(solutionCheckBox.isSelected());
+            solutionIsDisplayed = solutionCheckBox.isSelected();
+            
+            /* Note: when displayCurrentMaze is called, currentMaze will have already been initialized
+            because solutionCheckBox will not be enabled until a maze is displayed. */
+            displayCurrentMaze(app.getCurrentMaze().getWidth(), app.getCurrentMaze().getHeight());
         });
         
         generateButton.setOnAction(e -> {
@@ -216,7 +227,11 @@ public class MazeDisplay {
      * @param height 
      */
     public void displayCurrentMaze(int width, int height) {
-        display.getChildren().clear();  // First clear all children from display pane
+        if(mazeIsDisplayed)
+            display.getChildren().clear();  // First clear all children from display pane, if another maze is currently displayed
+        mazeIsDisplayed = true;
+        if(solutionCheckBox.isDisable())
+            solutionCheckBox.setDisable(false);
         
         // By dividing by slightly more than width and height, cells are smaller than necessary so that
         // there will be space on all sides between the edge of the display and the maze
@@ -230,15 +245,18 @@ public class MazeDisplay {
         else
             cellSize = cellHeight;
         
-//        // Width and height offsets are the amounts the maze will be offset from the edges of the display
-//        double widthOffset = (PREFERRED_DISPLAY_WIDTH / (width * cellSize)) / 2;
-//        double heightOffset = (PREFERRED_DISPLAY_HEIGHT / (height * cellSize)) / 2;
+        double widthOffset = (PREFERRED_DISPLAY_WIDTH - (cellSize * width)) / 2;
+        double heightOffset = (PREFERRED_DISPLAY_HEIGHT - (cellSize * height)) / 2;
         
         // Display all cells in display pane
         for(int i = 0; i < width; i++){
             for(int j = 0; j < height; j++){
-                display.getChildren().add(displayCell(app.getCurrentMaze().getCell(i, j), (i * cellSize), 
-                        (j * cellSize), cellSize));
+                if(solutionIsDisplayed && app.getCurrentMaze().getCell(i, j).getSolution())
+                    display.getChildren().add(displaySolutionCell(app.getCurrentMaze().getCell(i, j), widthOffset + (i * cellSize), 
+                        heightOffset + (j * cellSize), cellSize));
+                else
+                    display.getChildren().add(displayCell(app.getCurrentMaze().getCell(i, j), widthOffset + (i * cellSize), 
+                        heightOffset + (j * cellSize), cellSize));
             }
         }    
     }
@@ -264,7 +282,31 @@ public class MazeDisplay {
         return cellGroup;
     }
     
-    public void displaySolution(){
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    /**
+     * Creates a group of lines which can then be added to the display pane for a given cell.
+     * Additionally, adds a colored square to the group so that the maze's solution is clear to the user.
+     * @param c
+     * @param startX
+     * @param startY
+     * @param cellSize
+     * @return 
+     */
+    public Group displaySolutionCell(MazeCell c, double startX, double startY, double cellSize){
+        Group cellGroup = new Group();
+        if(c.hasTopWall())
+            cellGroup.getChildren().add(new Line(startX, startY, startX + cellSize, startY));
+        if(c.hasBottomWall())
+            cellGroup.getChildren().add(new Line(startX, startY + cellSize, startX + cellSize, startY + cellSize));
+        if(c.hasLeftWall())
+            cellGroup.getChildren().add(new Line(startX, startY, startX, startY + cellSize));
+        if(c.hasRightWall())
+            cellGroup.getChildren().add(new Line(startX + cellSize, startY, startX + cellSize, startY + cellSize));
+        
+        Rectangle r = new Rectangle(startX, startY, cellSize, cellSize);
+        r.setStroke(Color.TRANSPARENT);
+        r.setFill(SOLUTION_COLOR);
+        cellGroup.getChildren().add(r);
+        
+        return cellGroup;
     }
 }
