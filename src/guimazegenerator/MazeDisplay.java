@@ -3,8 +3,10 @@
  */
 package guimazegenerator;
 
+import guimazegenerator.data.MazeCell;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
@@ -14,6 +16,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.HBox;
+import javafx.scene.shape.Line;
 import javafx.stage.Stage;
 
 /**
@@ -23,7 +26,7 @@ import javafx.stage.Stage;
 public class MazeDisplay {
     
     public static final double PREFERRED_DISPLAY_HEIGHT = 600;
-    public static final double PREFERRED_DISPLAY_WIDTH = 800;
+    public static final double PREFERRED_DISPLAY_WIDTH = 600;
     
     static final String WIDTH_TEXT_CLASS = "width_text";
     static final String HEIGHT_TEXT_CLASS = "height_text";
@@ -38,6 +41,7 @@ public class MazeDisplay {
     HBox heightPane;
     Label widthLabel;
     Label heightLabel;
+    Label solutionLabel;
     
     //The controls for the app
     CheckBox solutionCheckBox;
@@ -50,6 +54,9 @@ public class MazeDisplay {
     //Flags keeping track of text validity
     boolean widthTextIsValid;
     boolean heightTextIsValid;
+    
+    //Flag to keep track of whether or not solution is displayed
+    boolean isSolutionDisplayed;
     
     //The controller class
     GUIMazeGenerator app;
@@ -81,6 +88,7 @@ public class MazeDisplay {
         heightPane = new HBox();
         widthLabel = new Label("Width:");
         heightLabel = new Label("Height:");
+        solutionLabel = new Label("Display solution");
         
         //Initialize the controls and set their handlers
         solutionCheckBox = new CheckBox();
@@ -101,8 +109,10 @@ public class MazeDisplay {
         heightPane.getChildren().addAll(heightLabel, heightText);
         widthTextIsValid = false;
         heightTextIsValid = false;
+        isSolutionDisplayed = false;
         
-        toolbar.getChildren().addAll(generateButton, widthPane, heightPane, zoomInButton, zoomOutButton, solutionCheckBox);
+        toolbar.getChildren().addAll(generateButton, widthPane, heightPane, zoomInButton, 
+                zoomOutButton, solutionLabel, solutionCheckBox);
         appPane.setTop(toolbar);
         appPane.setCenter(display);
     }
@@ -196,5 +206,62 @@ public class MazeDisplay {
     
     public int getMazeHeight(){
         return Integer.parseInt(heightText.getText());
+    }
+
+    /**
+     * Displays the current maze, centered in the middle of the display frame. Calculates cell size
+     * based on the number of cells.
+     * @param width
+     * @param height 
+     */
+    public void displayCurrentMaze(int width, int height) {
+        display.getChildren().clear();  // First clear all children from display pane
+        
+        double cellWidth = PREFERRED_DISPLAY_WIDTH / width;
+        double cellHeight = PREFERRED_DISPLAY_HEIGHT / height;
+        
+        //Set the cell size to be the minimum of the cell width and height
+        double cellSize = 0;
+        if(cellWidth < cellHeight)
+            cellSize = cellWidth;
+        else
+            cellSize = cellHeight;
+        
+        // Width and height offsets are the amounts the maze will be offset from the edges of the display
+        double widthOffset = (PREFERRED_DISPLAY_WIDTH % (width * cellSize)) / 2;
+        double heightOffset = (PREFERRED_DISPLAY_HEIGHT % (height * cellSize)) / 2;
+        
+        // Display all cells in display pane
+        for(int i = 0; i < width; i++){
+            for(int j = 0; j < height; j++){
+                display.getChildren().add(displayCell(app.getCurrentMaze().getCell(i, j), widthOffset + (i * cellSize), 
+                        heightOffset + (j * cellSize), cellSize));
+            }
+        }    
+    }
+    
+    /**
+     * Creates a group of lines which can then be added to the display pane for a given cell.
+     * @param c
+     * @param startX
+     * @param startY
+     * @param cellSize
+     * @return 
+     */
+    public Group displayCell(MazeCell c, double startX, double startY, double cellSize){
+        Group cellGroup = new Group();
+        if(c.hasTopWall())
+            cellGroup.getChildren().add(new Line(startX, startY, startX + cellSize, startY));
+        if(c.hasBottomWall())
+            cellGroup.getChildren().add(new Line(startX, startY + cellSize, startX + cellSize, startY + cellSize));
+        if(c.hasLeftWall())
+            cellGroup.getChildren().add(new Line(startX, startY, startX, startY + cellSize));
+        if(c.hasRightWall())
+            cellGroup.getChildren().add(new Line(startX + cellSize, startY, startX + cellSize, startY + cellSize));
+        return cellGroup;
+    }
+    
+    public void displaySolution(){
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

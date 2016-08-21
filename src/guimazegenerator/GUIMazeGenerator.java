@@ -28,6 +28,10 @@ public class GUIMazeGenerator extends Application {
         currentMaze = m;
     }
     
+    public Maze getCurrentMaze(){
+        return currentMaze;
+    }
+    
     public MazeDisplay getDisplay(){
         return display;
     }

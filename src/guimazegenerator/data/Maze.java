@@ -181,4 +181,14 @@ public class Maze {
         
         return toReturn;
     }
+    
+    /**
+     * Returns the cell at the given x and y coordinates within the mazeGrid array
+     * @param x
+     * @param y
+     * @return 
+     */
+    public MazeCell getCell(int x, int y){
+        return mazeGrid[x][y];
+    }
 }

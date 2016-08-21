@@ -3,6 +3,7 @@
  */
 package guimazegenerator;
 
+import guimazegenerator.data.Maze;
 import javafx.scene.control.TextField;
 
 /**
@@ -24,6 +25,10 @@ public class MazeController {
     public void handleGenerateButtonPress() {
         int width = app.getDisplay().getMazeWidth();
         int height = app.getDisplay().getMazeHeight();
+        Maze m = new Maze(width, height);
+        m.generateMaze();
+        app.setCurrentMaze(m);
+        app.getDisplay().displayCurrentMaze(width, height);
     }
 
     public void handleZoomInPress() {
