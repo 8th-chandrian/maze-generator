@@ -25,8 +25,9 @@ import javafx.stage.Stage;
  */
 public class MazeDisplay {
     
-    public static final double PREFERRED_DISPLAY_HEIGHT = 600;
-    public static final double PREFERRED_DISPLAY_WIDTH = 600;
+    public static final double PREFERRED_DISPLAY_HEIGHT = 800;
+    public static final double PREFERRED_DISPLAY_WIDTH = 800;
+    public static final double DISPLAY_BUFFER = 1.1;
     
     static final String WIDTH_TEXT_CLASS = "width_text";
     static final String HEIGHT_TEXT_CLASS = "height_text";
@@ -217,8 +218,10 @@ public class MazeDisplay {
     public void displayCurrentMaze(int width, int height) {
         display.getChildren().clear();  // First clear all children from display pane
         
-        double cellWidth = PREFERRED_DISPLAY_WIDTH / width;
-        double cellHeight = PREFERRED_DISPLAY_HEIGHT / height;
+        // By dividing by slightly more than width and height, cells are smaller than necessary so that
+        // there will be space on all sides between the edge of the display and the maze
+        double cellWidth = (PREFERRED_DISPLAY_WIDTH) / (DISPLAY_BUFFER * width);
+        double cellHeight = (PREFERRED_DISPLAY_HEIGHT) / (DISPLAY_BUFFER * height);
         
         //Set the cell size to be the minimum of the cell width and height
         double cellSize = 0;
@@ -227,15 +230,15 @@ public class MazeDisplay {
         else
             cellSize = cellHeight;
         
-        // Width and height offsets are the amounts the maze will be offset from the edges of the display
-        double widthOffset = (PREFERRED_DISPLAY_WIDTH % (width * cellSize)) / 2;
-        double heightOffset = (PREFERRED_DISPLAY_HEIGHT % (height * cellSize)) / 2;
+//        // Width and height offsets are the amounts the maze will be offset from the edges of the display
+//        double widthOffset = (PREFERRED_DISPLAY_WIDTH / (width * cellSize)) / 2;
+//        double heightOffset = (PREFERRED_DISPLAY_HEIGHT / (height * cellSize)) / 2;
         
         // Display all cells in display pane
         for(int i = 0; i < width; i++){
             for(int j = 0; j < height; j++){
-                display.getChildren().add(displayCell(app.getCurrentMaze().getCell(i, j), widthOffset + (i * cellSize), 
-                        heightOffset + (j * cellSize), cellSize));
+                display.getChildren().add(displayCell(app.getCurrentMaze().getCell(i, j), (i * cellSize), 
+                        (j * cellSize), cellSize));
             }
         }    
     }

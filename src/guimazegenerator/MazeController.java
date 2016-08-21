@@ -12,6 +12,8 @@ import javafx.scene.control.TextField;
  */
 public class MazeController {
 
+    public static final int MAX_MAZE_SIZE = 200;
+    
     GUIMazeGenerator app;
     
     MazeController(GUIMazeGenerator app) {
@@ -55,7 +57,7 @@ public class MazeController {
         else if(!text.matches("[0-9]+")){
             app.getDisplay().invalidText(textField);
         }
-        else if(Integer.parseInt(text) > 999 || Integer.parseInt(text) < 2){
+        else if(Integer.parseInt(text) > MAX_MAZE_SIZE || Integer.parseInt(text) < 2){
             app.getDisplay().invalidText(textField);
         }
         else{
